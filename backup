@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# Color codes
+LRED='\033[0;31m'
+LBLUE='\033[1;34m'
+LYELLOW='\033[1;33m'
+LGREEN='\033[1;32m'
+LGRAY='\033[1;37m'
+LPURPLE='\033[1;35m'
+LNOCOLOR='\033[0m'
+
+# Derive the repo directory name
+REPO_DIR=$(dirname "$(realpath "$0")")
+BACKUP_DIR="$REPO_DIR/my-dot-files"
+WHITELIST_FILE="$REPO_DIR/whitelist.txt"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    HOST=$(scutil --get ComputerName)
+else
+    HOST=$(hostname)
+fi
+
+COMPUTER_NAME=$(echo $HOST sed -e 's/ /_/g')
+
+# Debug info
+echo "REPO_DIR: $REPO_DIR"
+echo "BACKUP_DIR: $BACKUP_DIR"
+echo "WHITELIST_FILE: $WHITELIST_FILE"
+
+# Check if whitelist.txt exists
+if [[ ! -f $WHITELIST_FILE ]]; then
+  echo -e "${LRED}Error: whitelist.txt file does not exist in $REPO_DIR. Aborting script.${LNOCOLOR}"
+  echo "To fix this: Ensure whitelist.txt is present in $REPO_DIR"
+  exit 1
+fi
+
+# Print whitelist
+echo -e "${LYELLOW}Whitelist:${LNOCOLOR}"
+cat "$WHITELIST_FILE"
+echo ""
+
+# Create backup directory if it doesn't exist
+mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
+
+# Sync files and directories based on the whitelist
+while IFS= read -r item; do
+  # Trim leading and trailing whitespace
+  item=$(echo "$item" | xargs)
+  if [ -e "$HOME/$item" ]; then
+    if [ -d "$HOME/$item" ]; then
+      # Handle directory
+      echo -e "${LGREEN}Syncing directory $item to $BACKUP_DIR/${item}${LNOCOLOR}"
+      mkdir -p "$BACKUP_DIR/$item" || { echo -e "${LRED}Failed to create directory for $item.${LNOCOLOR}"; exit 1; }
+      cp -r "$HOME/$item"/* "$BACKUP_DIR/$item/" || { echo -e "${LRED}Failed to copy directory $item.${LNOCOLOR}"; exit 1; }
+    else
+      # Handle file
+      echo -e "${LGREEN}Syncing file $item to $BACKUP_DIR/${item}${LNOCOLOR}"
+      mkdir -p "$BACKUP_DIR/$(dirname "$item")" || { echo -e "${LRED}Failed to create directory for $item.${LNOCOLOR}"; exit 1; }
+      cp "$HOME/$item" "$BACKUP_DIR/$item" || { echo -e "${LRED}Failed to copy $item.${LNOCOLOR}"; exit 1; }
+    fi
+  else
+    echo -e "${LYELLOW}$item does not exist in home directory, skipping.${LNOCOLOR}"
+  fi
+done < "$WHITELIST_FILE"
+
+# Fetch and handle changes in the repository
+cd "$REPO_DIR" || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
+
+echo ""
+echo -e "${LGRAY}Fetching changes from origin${LNOCOLOR}"
+
+git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
+
+if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
+  echo -e "${LGRAY}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
+  git checkout "$COMPUTER_NAME" || { echo -e "${LRED}Failed to checkout branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
+else
+  echo -e "${LYELLOW}Creating and switching to new branch $COMPUTER_NAME${LNOCOLOR}"
+  git checkout -b "$COMPUTER_NAME" || { echo -e "${LRED}Failed to create and checkout branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
+fi
+
+# Add only my-dot-files changes
+git add "$BACKUP_DIR" || { echo -e "${LRED}Failed to add changes to git.${LNOCOLOR}"; exit 1; }
+GIT_STATUS=$(git status)
+echo ""
+echo -e "${LGRAY}Git status:${LNOCOLOR}"
+echo "$GIT_STATUS"
+echo ""
+
+if echo "$GIT_STATUS" | grep -q "both modified"; then
+  echo -e "${LRED}Conflict detected! Please resolve the conflict before committing and pushing changes.${LNOCOLOR}"
+  exit 1
+fi
+
+if git diff --cached --exit-code > /dev/null; then
+  echo -e "${LYELLOW}No changes to commit.${LNOCOLOR}"
+else
+  echo -e "${LYELLOW}Files with changes${LNOCOLOR}"
+  echo -e "${LYELLOW}-----------------------------------------${LNOCOLOR}"
+  echo -e "${LBLUE}$(git diff --cached --name-only)${LNOCOLOR}"
+  echo -e "${LYELLOW}-----------------------------------------${LNOCOLOR}"
+  echo ""
+  echo -e "${LYELLOW}Committing and pushing changes.${LNOCOLOR}"
+  git commit -m "Updating dot files for $COMPUTER_NAME" || { echo -e "${LRED}Failed to commit changes.${LNOCOLOR}"; exit 1; }
+  git push origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
+  echo ""
+  echo -e "${LGREEN}Your dot files have been updated and added to branch: ${LBLUE}$COMPUTER_NAME${LNOCOLOR}"
+fi
+
+cd ..
+
+echo -e "+-------------------- ${LPURPLE}Need to backup other files?${LNOCOLOR} --------------------+"
+echo -e "| 1. Add file to whitelist.txt                                        |"
+echo -e "| 2. Run ~/dot2git/backup to sync and commit changes                  |"
+echo -e "+---------------------------------------------------------------------+"
+echo -e "${LNOCOLOR}"
