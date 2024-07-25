@@ -8,9 +8,9 @@ LNOCOLOR='\033[0m'
 REPO_DIR="$HOME/dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
 
-echo "+-------------------- Debug Info --------------------+"
-echo "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
-echo "+----------------------------------------------------+"
+echo -e "+-------------------- Debug Info --------------------+"
+echo -e "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
+echo -e "+----------------------------------------------------+"
 
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
 
