@@ -5,13 +5,15 @@
 ## Setup
 
 **Clone and Create Private Repository**:
-1. Clone this repository to your local machine:
-2. Create a new private repository on your GitHub account (name it `dotf2git` or any other name you prefer).
-3. Push the cloned repository to your new private repository:
+1. Create a new private repository on your GitHub account (name it `dotf2git`)
+2. Run the following command. Make sure to replace **YOUR_GITHUB_USER_NAME**.
     ```bash
+    cd ~
+    git clone git@github.com:PeachlifeAB/dotf2git.git
     cd dotf2git
     git remote set-url origin git@github.com:YOUR_GITHUB_USER_NAME/dotf2git.git
     git push -u origin main
+    dotf2git/backup
     ```
     
 **IMPORTANT** Be sure to keep your new repository private so only you can access your config files.
