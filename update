@@ -1,0 +1,24 @@
+#!/bin/bash
+
+LRED='\033[0;31m'
+LYELLOW='\033[1;33m'
+LGREEN='\033[1;32m'
+LGRAY='\033[1;37m'
+LNOCOLOR='\033[0m'
+REPO_DIR="$HOME/dotf2git"
+UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
+
+echo "+-------------------- Debug Info --------------------+"
+echo "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
+echo "+----------------------------------------------------+"
+
+cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
+
+echo -e "${LGRAY}Fetching latest changes from upstream${LNOCOLOR}"
+git fetch upstream || { echo -e "${LRED}Failed to fetch changes from upstream.${LNOCOLOR}"; exit 1; }
+
+echo -e "${LGRAY}Merging latest changes from upstream into main${LNOCOLOR}"
+git checkout main || { echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"; exit 1; }
+git merge upstream/main || { echo -e "${LRED}Failed to merge changes from upstream.${LNOCOLOR}"; exit 1; }
+
+echo -e "${LGREEN}Update complete!${LNOCOLOR}"
