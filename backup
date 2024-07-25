@@ -20,7 +20,7 @@ else
     HOST=$(hostname)
 fi
 
-COMPUTER_NAME=$(echo $HOST sed -e 's/ /_/g')
+COMPUTER_NAME=$(echo $HOST | sed -e 's/ /_/g')
 
 # Debug info
 echo "REPO_DIR: $REPO_DIR"
