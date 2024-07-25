@@ -13,7 +13,7 @@
     cd dotf2git
     git remote set-url origin git@github.com:YOUR_GITHUB_USER_NAME/dotf2git.git
     git push -u origin main
-    dotf2git/backup
+    ~/dotf2git/backup
     ```
     
 **IMPORTANT** Be sure to keep your new repository private so only you can access your config files.
