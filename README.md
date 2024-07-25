@@ -40,4 +40,5 @@ The script will create a new branch named after each computer’s hostname, ensu
 
 ## Missing some dot files?
 
-Add file names to whitelist.txt
+Just add the file name to `whitelist.txt`
+If you think it should be included for everyone, please add an [issue](https://github.com/PeachlifeAB/dotf2git/issues/new/choose)
