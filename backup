@@ -73,7 +73,11 @@ else
     HOST=$(hostname)
 fi
 
-COMPUTER_NAME=$(echo $HOST | sed -e 's/[^a-zA-Z0-9_-]/_/g')
+# Remove all non-alphanumeric characters except for spaces
+CLEANED_HOST=$(echo $HOST | sed 's/[^a-zA-Z0-9 ]//g')
+
+# Replace spaces with underscores
+COMPUTER_NAME=$(echo $CLEANED_HOST | sed 's/ /_/g')
 
 echo "+-------------------- Debug Info --------------------+"
 echo -e "Repo DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
@@ -81,6 +85,7 @@ echo -e "Backup DIR: ${LYELLOW}$BACKUP_DIR${LNOCOLOR}"
 echo -e "Backup origin URL: ${LYELLOW}$BACKUP_ORIGIN_URL${LNOCOLOR}"
 echo -e "User repository URL: ${LYELLOW}$ORIGIN_REPO_URL${LNOCOLOR}"
 echo -e "Upstream URL: ${LYELLOW}$UPSTREAM_REPO_URL${LNOCOLOR}"
+echo -e "Computer name: ${LYELLOW}$COMPUTER_NAME${LNOCOLOR}"
 echo "+----------------------------------------------------+"
 
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
