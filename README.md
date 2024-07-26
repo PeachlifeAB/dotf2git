@@ -11,6 +11,8 @@ A simple tool for backing up your dot files to your own GitHub account.
 cd ~ && git clone git@github.com:PeachlifeAB/dotf2git.git && dotf2git/backup
 ```
 
+This will set the remotes up for you and ensure you can easily get latest features and bug fixes.
+
 ## Use
 
 To sync and back up your dotfiles, run:
@@ -40,4 +42,5 @@ The script will create a new branch named after each computer’s hostname, ensu
 
 ## Missing some dot files?
 
-Add file names to whitelist.txt
+Just add the file name to `whitelist.txt`
+If you think it should be included for everyone, please add an [issue](https://github.com/PeachlifeAB/dotf2git/issues/new/choose)
