@@ -14,8 +14,8 @@ CONFIG_FILE="$HOME/.dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
 
 echo "+-------------------- Debug Info --------------------+"
-echo "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
-echo "BACKUP_DIR: ${LYELLOW}$BACKUP_DIR${LNOCOLOR}"
+echo -e "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
+echo -e "BACKUP_DIR: ${LYELLOW}$BACKUP_DIR${LNOCOLOR}"
 echo "+----------------------------------------------------+"
 
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
