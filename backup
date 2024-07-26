@@ -88,22 +88,16 @@ echo -e "Upstream URL: ${LYELLOW}$UPSTREAM_REPO_URL${LNOCOLOR}"
 echo -e "Computer name: ${LYELLOW}$COMPUTER_NAME${LNOCOLOR}"
 echo "+----------------------------------------------------+"
 
-rm -rf $BACKUP_DIR { echo -e "${LRED}Failed to remove backup directory before sync.${LNOCOLOR}"; exit 1; }
-mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
-
-while IFS= read -r item; do
-  item=$(echo "$item" | xargs)
-  if [ -e "$HOME/$item" ]; then
-    echo -e "${LGREEN}Syncing $item to $BACKUP_DIR/$item${LNOCOLOR}"
-    mkdir -p "$BACKUP_DIR/$(dirname "$item")"
-    cp -r "$HOME/$item" "$BACKUP_DIR/$item"
-  fi
-done < "$WHITELIST_FILE"
-
 echo ""
 echo -e "${LGRAY}Fetching changes from origin${LNOCOLOR}"
 
 git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
+
+if ! git diff-index --quiet HEAD --; then
+  echo -e "${LRED}Uncommitted changes detected in the working directory.${LNOCOLOR}"
+  echo -e "${LYELLOW}Please manually add, commit, or stash your changes before running this script again.${LNOCOLOR}"
+  exit 1
+fi
 
 if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
   echo -e "${LGRAY}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
@@ -112,6 +106,18 @@ else
   echo -e "${LYELLOW}Creating and switching to new branch $COMPUTER_NAME${LNOCOLOR}"
   git checkout -b "$COMPUTER_NAME" || { echo -e "${LRED}Failed to create and switch to branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
 fi
+
+rm -rf "$BACKUP_DIR" || { echo -e "${LRED}Failed to remove backup directory.${LNOCOLOR}"; exit 1; }
+mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
+
+while IFS= read -r item; do
+  item=$(echo "$item" | xargs)
+  if [ -e "$HOME/$item" ]; then
+    echo -e "${LGREEN}Syncing $item to $BACKUP_DIR/$item${LNOCOLOR}"
+    mkdir -p "$BACKUP_DIR/$(dirname "$item")"
+    cp -a "$HOME/$item" "$BACKUP_DIR/$(dirname "$item")"
+  fi
+done < "$WHITELIST_FILE"
 
 git add "$BACKUP_DIR"
 GIT_STATUS=$(git status)
