@@ -107,6 +107,9 @@ else
   git checkout -b "$COMPUTER_NAME" || { echo -e "${LRED}Failed to create and switch to branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
 fi
 
+echo -e "${LRED}Updating $COMPUTER_NAME branch with latest features from origin/main.${LNOCOLOR}"
+git pull origin/main || { echo -e "${LRED}Failed to update from origin/main.${LNOCOLOR}"; exit 1; }
+
 rm -rf "$BACKUP_DIR" || { echo -e "${LRED}Failed to remove backup directory.${LNOCOLOR}"; exit 1; }
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
 
@@ -152,6 +155,6 @@ cd $HOME
 echo -e ""
 echo -e "+-------------------- ${LPURPLE}Need to backup other files?${LNOCOLOR} --------------------+"
 echo -e "| 1. Add file to whitelist.txt                                        |"
-echo -e "| 2. Run ~/dot2git/backup to sync and commit changes                  |"
+echo -e "| 2. Run ~/dotf2git/backup to sync and commit changes                  |"
 echo -e "+---------------------------------------------------------------------+"
 echo -e "${LNOCOLOR}"
