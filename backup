@@ -13,11 +13,6 @@ WHITELIST_FILE="$REPO_DIR/whitelist.txt"
 CONFIG_FILE="$HOME/.dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
 
-echo "+-------------------- Debug Info --------------------+"
-echo -e "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
-echo -e "BACKUP_DIR: ${LYELLOW}$BACKUP_DIR${LNOCOLOR}"
-echo "+----------------------------------------------------+"
-
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
 
 if [[ ! -f $WHITELIST_FILE ]]; then
@@ -29,23 +24,46 @@ else
   echo ""
 fi
 
+# Check if Git is installed
+if ! command -v git &> /dev/null; then
+  echo -e "${LRED}Error: Git is not installed. Please install Git and try again.${LNOCOLOR}"
+  exit 1
+fi
+
 get_user_remote_url() {
+  BACKUP_ORIGIN_URL="$(git remote get-url origin 2>/dev/null)"
+  
   if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
   else
     read -p "Enter your GitHub username: " GITHUB_USER_NAME
+    if [ "$GITHUB_USER_NAME" = "PeachlifeAB" ]; then
+      echo -e "${LRED}Fatal error. The username is same as upstream PeachlifeAB.${LNOCOLOR}"
+      exit 1
+    fi
     echo "GITHUB_USER_NAME=$GITHUB_USER_NAME" > "$CONFIG_FILE"
-    REPO_URL_DEFAULT="git@github.com:$GITHUB_USER_NAME/dotf2git.git"
-    read -p "Press Enter to confirm the repository URL or edit it [$REPO_URL_DEFAULT]: " REPO_URL
-    REPO_URL="${REPO_URL:-$REPO_URL_DEFAULT}"
+    USER_REPO_URL="git@github.com:$GITHUB_USER_NAME/dotf2git.git"
+    read -p "Press Enter to confirm the repository URL or edit it [$USER_REPO_URL]: " REPO_URL
+    REPO_URL="${REPO_URL:-$USER_REPO_URL}"
     git remote remove origin 2>/dev/null
     git remote remove upstream 2>/dev/null
     git remote add origin $REPO_URL
     git remote add upstream $UPSTREAM_URL
+
     git push -u origin main || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; git remote -v; rm $CONFIG_FILE; exit 1; }
   fi
+
   ORIGIN_REPO_URL="$(git remote get-url origin)"
-  echo "Using repository URL: ${LRED}$ORIGIN_REPO_URL${LNOCOLOR}"
+  UPSTREAM_REPO_URL="$(git remote get-url upstream)"
+  
+  # Precaution
+  if [[ "$ORIGIN_REPO_URL" == *"github.com:PeachlifeAB/dotf2git.git" ]] && [[ "$UPSTREAM_REPO_URL" == *"github.com:PeachlifeAB/dotf2git.git" ]]; then
+    echo -e "${LRED}Fatal error: Running backup script with $ORIGIN_REPO_URL as origin.${LNOCOLOR}"
+    git remote remove upstream 2>/dev/null
+    git remote remove origin 2>/dev/null
+    git remote add origin $BACKUP_ORIGIN_URL 2>/dev/null
+    exit 1
+  fi
 }
 get_user_remote_url
 
@@ -56,6 +74,14 @@ else
 fi
 
 COMPUTER_NAME=$(echo $HOST | sed -e 's/[^a-zA-Z0-9_-]/_/g')
+
+echo "+-------------------- Debug Info --------------------+"
+echo -e "Repo DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
+echo -e "Backup DIR: ${LYELLOW}$BACKUP_DIR${LNOCOLOR}"
+echo -e "Backup origin URL: ${LYELLOW}$BACKUP_ORIGIN_URL${LNOCOLOR}"
+echo -e "User repository URL: ${LYELLOW}$ORIGIN_REPO_URL${LNOCOLOR}"
+echo -e "Upstream URL: ${LYELLOW}$UPSTREAM_REPO_URL${LNOCOLOR}"
+echo "+----------------------------------------------------+"
 
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
 
