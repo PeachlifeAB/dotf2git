@@ -20,5 +20,6 @@ git fetch upstream || { echo -e "${LRED}Failed to fetch changes from upstream.${
 echo -e "${LGRAY}Merging latest changes from upstream into main${LNOCOLOR}"
 git checkout main || { echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"; exit 1; }
 git merge upstream/main || { echo -e "${LRED}Failed to merge changes from upstream.${LNOCOLOR}"; exit 1; }
+git push origin main || { echo -e "${LRED}Failed to push updates from upstream to origin main.${LNOCOLOR}"; exit 1; }
 
 echo -e "${LGREEN}Update complete!${LNOCOLOR}"
