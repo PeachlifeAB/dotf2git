@@ -88,6 +88,7 @@ echo -e "Upstream URL: ${LYELLOW}$UPSTREAM_REPO_URL${LNOCOLOR}"
 echo -e "Computer name: ${LYELLOW}$COMPUTER_NAME${LNOCOLOR}"
 echo "+----------------------------------------------------+"
 
+rm -rf $BACKUP_DIR { echo -e "${LRED}Failed to remove backup directory before sync.${LNOCOLOR}"; exit 1; }
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
 
 while IFS= read -r item; do
