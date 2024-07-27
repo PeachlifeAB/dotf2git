@@ -150,7 +150,7 @@ else
   echo ""
   echo -e "${LYELLOW}Committing and pushing changes.${LNOCOLOR}"
   git commit -m "Updating dot files for $COMPUTER_NAME" || { echo -e "${LRED}Failed to commit changes.${LNOCOLOR}"; exit 1; }
-  git push origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
+  git push -f origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
   echo ""
   echo -e "${LGREEN}Your dot files have been updated and added to branch: ${LBLUE}$COMPUTER_NAME${LNOCOLOR}"
 fi
