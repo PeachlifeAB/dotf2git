@@ -99,6 +99,9 @@ if ! git diff-index --quiet HEAD --; then
   exit 1
 fi
 
+echo -e "${LYELLOW}Stashing any local changes before checking out $COMPUTER_NAME branch.${LNOCOLOR}"
+git stash 2>/dev/null
+
 if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
   echo -e "${LGRAY}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
   git checkout "$COMPUTER_NAME" || { echo -e "${LRED}Failed to switch to branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
@@ -107,10 +110,10 @@ else
   git checkout -b "$COMPUTER_NAME" || { echo -e "${LRED}Failed to create and switch to branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
 fi
 
-echo -e "${LRED}Updating $COMPUTER_NAME branch with latest features from origin/main.${LNOCOLOR}"
-git pull origin/main || { echo -e "${LRED}Failed to update from origin/main.${LNOCOLOR}"; exit 1; }
+echo -e "${LYELLOW}Updating $COMPUTER_NAME branch with latest features from origin/main.${LNOCOLOR}"
+git reset --hard origin/main 2>/dev/null
 
-rm -rf "$BACKUP_DIR" || { echo -e "${LRED}Failed to remove backup directory.${LNOCOLOR}"; exit 1; }
+rm -rf "$BACKUP_DIR"
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
 
 while IFS= read -r item; do
