@@ -111,7 +111,7 @@ else
 fi
 
 echo -e "${LYELLOW}Updating $COMPUTER_NAME branch with latest features from origin/main.${LNOCOLOR}"
-git reset --hard origin/main 2>/dev/null
+git merge -X theirs -m "Meging in latest features from main" origin/main 2>/dev/null
 
 rm -rf "$BACKUP_DIR"
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
@@ -150,7 +150,7 @@ else
   echo ""
   echo -e "${LYELLOW}Committing and pushing changes.${LNOCOLOR}"
   git commit -m "Updating dot files for $COMPUTER_NAME" || { echo -e "${LRED}Failed to commit changes.${LNOCOLOR}"; exit 1; }
-  git push -f origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
+  git push origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
   echo ""
   echo -e "${LGREEN}Your dot files have been updated and added to branch: ${LBLUE}$COMPUTER_NAME${LNOCOLOR}"
 fi
