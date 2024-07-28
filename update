@@ -22,6 +22,10 @@ git stash 2>/dev/null
 echo -e "${LGRAY}Merging latest changes from upstream into main${LNOCOLOR}"
 git checkout main || { echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"; exit 1; }
 git merge -X theirs -m "Meging in latest features from upstream" upstream/main || { echo -e "${LRED}Failed to merge changes from upstream.${LNOCOLOR}"; exit 1; }
+
+echo -e "${LGRAY}Pulling latest changes from origin with rebase${LNOCOLOR}"
+git pull --rebase --autostash origin main || { echo -e "${LRED}Failed to rebase with origin/main. Aborting.${LNOCOLOR}"; exit 1; }
+
 git push origin main || { echo -e "${LRED}Failed to push updates from upstream to origin main.${LNOCOLOR}"; exit 1; }
 
 echo -e "${LGREEN}Update complete!${LNOCOLOR}"
