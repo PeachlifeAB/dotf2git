@@ -40,6 +40,8 @@ Just clone your private version of this repo on each computer and run:
 
 The script will create a new branch named after each computer’s hostname, ensuring separate backups for each machine.
 
+Since dotf2git is based on git you can checkout and pull any computer branch locally to copy files between computers.
+
 ## Missing some dot files?
 
 Just add the file name to `whitelist.txt`

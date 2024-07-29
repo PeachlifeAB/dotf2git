@@ -18,3 +18,5 @@
 .cargo/config
 .npmrc
 .pythonrc.py
+.cron
+.dotf2git
