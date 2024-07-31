@@ -93,12 +93,6 @@ echo -e "${LGRAY}Fetching changes from origin${LNOCOLOR}"
 
 git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
 
-if ! git diff-index --quiet HEAD --; then
-  echo -e "${LRED}Uncommitted changes detected in the working directory.${LNOCOLOR}"
-  echo -e "${LYELLOW}Please manually add, commit, or stash your changes before running this script again.${LNOCOLOR}"
-  exit 1
-fi
-
 echo -e "${LYELLOW}Stashing any local changes before checking out $COMPUTER_NAME branch.${LNOCOLOR}"
 git stash 2>/dev/null
 
