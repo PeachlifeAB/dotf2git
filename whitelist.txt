@@ -20,3 +20,4 @@
 .pythonrc.py
 .cron
 .dotf2git
+.iterm
