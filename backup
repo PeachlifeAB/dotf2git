@@ -93,8 +93,11 @@ echo -e "${LGRAY}Fetching changes from origin${LNOCOLOR}"
 
 git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
 
-echo -e "${LYELLOW}Stashing any local changes before checking out $COMPUTER_NAME branch.${LNOCOLOR}"
-git stash 2>/dev/null
+WHITELIST_STASH_ID=$(git stash push -m "Stashing changes to whitelist.txt" "$WHITELIST_FILE" | shasum | awk '{print $1}')
+echo "Stashed changes with ID: $WHITELIST_STASH_ID"
+
+OTHER_STASH_ID=$(git stash push -m "Stashing other local changes" | shasum | awk '{print $1}')
+echo "Stashed other local changes with ID: $OTHER_STASH_ID"
 
 if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
   echo -e "${LGRAY}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
@@ -105,7 +108,11 @@ else
 fi
 
 echo -e "${LYELLOW}Updating $COMPUTER_NAME branch with latest features from origin/main.${LNOCOLOR}"
-git merge -X theirs -m "Meging in latest features from main" origin/main 2>/dev/null
+git merge -X theirs -m "Merging in latest features from main" origin/main 2>/dev/null
+
+if [ -n "$WHITELIST_STASH_ID" ]; then
+  git stash apply "$WHITELIST_STASH_ID" || { echo -e "${LRED}Failed to apply stashed changes to whitelist.txt.${LNOCOLOR}"; exit 1; }
+fi
 
 rm -rf "$BACKUP_DIR"
 mkdir -p "$BACKUP_DIR" || { echo -e "${LRED}Failed to create backup directory.${LNOCOLOR}"; exit 1; }
@@ -148,6 +155,17 @@ else
   echo ""
   echo -e "${LGREEN}Your dot files have been updated and added to branch: ${LBLUE}$COMPUTER_NAME${LNOCOLOR}"
 fi
+
+if [ -n "$OTHER_STASH_ID" ]; then
+  read -p "Do you want to apply the stashed local changes (other than whitelist.txt)? (y/n): " APPLY_STASH
+  if [ "$APPLY_STASH" == "y" ] || [ "$APPLY_STASH" == "Y" ]; then
+    git stash apply "$OTHER_STASH_ID" || { echo -e "${LRED}Failed to apply other stashed changes.${LNOCOLOR}"; exit 1; }
+    echo -e "${LYELLOW}Applied stashed local changes.${LNOCOLOR}"
+  else
+    echo -e "${LYELLOW}Skipped applying stashed local changes.${LNOCOLOR}"
+  fi
+fi
+
 cd $HOME
 echo -e ""
 echo -e "+-------------------- ${LPURPLE}Need to backup other files?${LNOCOLOR} --------------------+"
