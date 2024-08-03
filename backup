@@ -122,7 +122,12 @@ while IFS= read -r item; do
   if [ -e "$HOME/$item" ]; then
     echo -e "${LGREEN}Syncing $item to $BACKUP_DIR/$item${LNOCOLOR}"
     mkdir -p "$BACKUP_DIR/$(dirname "$item")"
-    cp -a "$HOME/$item" "$BACKUP_DIR/$item"
+    
+    if [ -d "$HOME/$item/.git" ]; then
+      rsync -av --exclude='.git' "$HOME/$item/" "$BACKUP_DIR/$item/"
+    else
+      cp -a "$HOME/$item" "$BACKUP_DIR/$item"
+    fi
   fi
 done < "$WHITELIST_FILE"
 
