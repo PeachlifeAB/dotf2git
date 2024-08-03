@@ -4,7 +4,6 @@ LRED='\033[0;31m'
 LBLUE='\033[1;34m'
 LYELLOW='\033[1;33m'
 LGREEN='\033[1;32m'
-LGRAY='\033[1;37m'
 LPURPLE='\033[1;35m'
 LNOCOLOR='\033[0m'
 REPO_DIR="$HOME/dotf2git"
@@ -89,7 +88,7 @@ echo -e "Computer name: ${LYELLOW}$COMPUTER_NAME${LNOCOLOR}"
 echo "+----------------------------------------------------+"
 
 echo ""
-echo -e "${LGRAY}Fetching changes from origin${LNOCOLOR}"
+echo -e "${LYELLOW}Fetching changes from origin${LNOCOLOR}"
 
 git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
 
@@ -100,7 +99,7 @@ OTHER_STASH_ID=$(git stash push -m "Stashing other local changes" | shasum | awk
 echo "Stashed other local changes with ID: $OTHER_STASH_ID"
 
 if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
-  echo -e "${LGRAY}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
+  echo -e "${LYELLOW}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
   git checkout "$COMPUTER_NAME" || { echo -e "${LRED}Failed to switch to branch $COMPUTER_NAME.${LNOCOLOR}"; exit 1; }
 else
   echo -e "${LYELLOW}Creating and switching to new branch $COMPUTER_NAME${LNOCOLOR}"
@@ -124,6 +123,7 @@ while IFS= read -r item; do
     mkdir -p "$BACKUP_DIR/$(dirname "$item")"
     
     if [ -d "$HOME/$item/.git" ]; then
+      git rm --cached -r "$item"
       rsync -av --exclude='.git' "$HOME/$item/" "$BACKUP_DIR/$item/"
     else
       cp -a "$HOME/$item" "$BACKUP_DIR/$item"
@@ -134,7 +134,7 @@ done < "$WHITELIST_FILE"
 git add "$BACKUP_DIR"
 GIT_STATUS=$(git status)
 echo ""
-echo -e "${LGRAY}Git status:${LNOCOLOR}"
+echo -e "${LYELLOW}Git status:${LNOCOLOR}"
 echo "$GIT_STATUS"
 echo ""
 
