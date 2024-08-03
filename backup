@@ -11,6 +11,7 @@ BACKUP_DIR="$REPO_DIR/my-dot-files"
 WHITELIST_FILE="$REPO_DIR/whitelist.txt"
 CONFIG_FILE="$HOME/.dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
+PWD=$(pwd)
 
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
 
@@ -92,11 +93,15 @@ echo -e "${LYELLOW}Fetching changes from origin${LNOCOLOR}"
 
 git fetch origin || { echo -e "${LRED}Failed to fetch changes from origin.${LNOCOLOR}"; exit 1; }
 
-WHITELIST_STASH_ID=$(git stash push -m "Stashing changes to whitelist.txt" "$WHITELIST_FILE" | shasum | awk '{print $1}')
-echo "Stashed changes with ID: $WHITELIST_STASH_ID"
+if ! git diff --quiet whitelist.txt; then
+  WHITELIST_STASH_ID=$(git stash push -m "Stashing changes to whitelist.txt" "$WHITELIST_FILE" | shasum | awk '{print $1}')
+  echo "Stashed changes with ID: $WHITELIST_STASH_ID"
+fi
 
-OTHER_STASH_ID=$(git stash push -m "Stashing other local changes" | shasum | awk '{print $1}')
-echo "Stashed other local changes with ID: $OTHER_STASH_ID"
+if ! git diff-index --quiet HEAD --; then
+  OTHER_STASH_ID=$(git stash push -m "Stashing other local changes" | shasum | awk '{print $1}')
+  echo "Stashed other local changes with ID: $OTHER_STASH_ID"
+fi
 
 if git show-ref --verify --quiet refs/heads/$COMPUTER_NAME; then
   echo -e "${LYELLOW}Switching to branch $COMPUTER_NAME${LNOCOLOR}"
@@ -110,7 +115,7 @@ echo -e "${LYELLOW}Updating $COMPUTER_NAME branch with latest features from orig
 git merge -X theirs -m "Merging in latest features from main" origin/main 2>/dev/null
 
 if [ -n "$WHITELIST_STASH_ID" ]; then
-  git stash apply "$WHITELIST_STASH_ID" || { echo -e "${LRED}Failed to apply stashed changes to whitelist.txt.${LNOCOLOR}"; exit 1; }
+  git stash apply $(git stash list | grep "$WHITELIST_STASH_ID" | cut -d: -f1) || { echo -e "${LRED}Failed to apply stashed changes to whitelist.txt.${LNOCOLOR}"; exit 1; }
 fi
 
 rm -rf "$BACKUP_DIR"
@@ -123,6 +128,7 @@ while IFS= read -r item; do
     mkdir -p "$BACKUP_DIR/$(dirname "$item")"
     
     if [ -d "$HOME/$item/.git" ]; then
+      echo -e "Unstaging nested git repository"
       git rm --cached -r "$item"
       rsync -av --exclude='.git' "$HOME/$item/" "$BACKUP_DIR/$item/"
     else
@@ -156,7 +162,7 @@ else
   echo ""
   echo -e "${LYELLOW}Committing and pushing changes.${LNOCOLOR}"
   git commit -m "Updating dot files for $COMPUTER_NAME" || { echo -e "${LRED}Failed to commit changes.${LNOCOLOR}"; exit 1; }
-  git push origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
+  git push -u origin "$COMPUTER_NAME" || { echo -e "${LRED}Failed to push changes.${LNOCOLOR}"; exit 1; }
   echo ""
   echo -e "${LGREEN}Your dot files have been updated and added to branch: ${LBLUE}$COMPUTER_NAME${LNOCOLOR}"
 fi
@@ -164,14 +170,14 @@ fi
 if [ -n "$OTHER_STASH_ID" ]; then
   read -p "Do you want to apply the stashed local changes (other than whitelist.txt)? (y/n): " APPLY_STASH
   if [ "$APPLY_STASH" == "y" ] || [ "$APPLY_STASH" == "Y" ]; then
-    git stash apply "$OTHER_STASH_ID" || { echo -e "${LRED}Failed to apply other stashed changes.${LNOCOLOR}"; exit 1; }
+    git stash apply $(git stash list | grep "$OTHER_STASH_ID" | cut -d: -f1) || { echo -e "${LRED}Failed to apply other stashed changes.${LNOCOLOR}"; exit 1; }
     echo -e "${LYELLOW}Applied stashed local changes.${LNOCOLOR}"
   else
     echo -e "${LYELLOW}Skipped applying stashed local changes.${LNOCOLOR}"
   fi
 fi
 
-cd $HOME
+cd "$PWD"
 echo -e ""
 echo -e "+-------------------- ${LPURPLE}Need to backup other files?${LNOCOLOR} --------------------+"
 echo -e "| 1. Add file to whitelist.txt                                        |"
