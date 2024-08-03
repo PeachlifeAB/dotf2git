@@ -7,7 +7,6 @@ LNOCOLOR='\033[0m'
 REPO_DIR="$HOME/dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
 PWD=$(pwd)
-CURRENT_BRANCH=$(git branch --show-current)
 LOCAL_CHANGES=0
 
 echo -e "+-------------------- Debug Info --------------------+"
@@ -15,6 +14,7 @@ echo -e "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
 echo -e "+----------------------------------------------------+"
 
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
+CURRENT_BRANCH=$(git branch --show-current)
 
 echo -e "${LYELLOW}Fetching latest changes from upstream${LNOCOLOR}"
 git fetch --all || { echo -e "${LRED}Failed to fetch changes.${LNOCOLOR}"; exit 1; }
