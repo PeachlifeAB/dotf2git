@@ -6,6 +6,9 @@ LGREEN='\033[1;32m'
 LNOCOLOR='\033[0m'
 REPO_DIR="$HOME/dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
+PWD=$(pwd)
+CURRENT_BRANCH=$(git branch --show-current)
+LOCAL_CHANGES=0
 
 echo -e "+-------------------- Debug Info --------------------+"
 echo -e "REPO_DIR: ${LYELLOW}$REPO_DIR${LNOCOLOR}"
@@ -14,17 +17,28 @@ echo -e "+----------------------------------------------------+"
 cd $REPO_DIR || { echo -e "${LRED}Failed to change directory to $REPO_DIR. Aborting.${LNOCOLOR}"; exit 1; }
 
 echo -e "${LYELLOW}Fetching latest changes from upstream${LNOCOLOR}"
-git fetch upstream || { echo -e "${LRED}Failed to fetch changes from upstream.${LNOCOLOR}"; exit 1; }
+git fetch --all || { echo -e "${LRED}Failed to fetch changes.${LNOCOLOR}"; exit 1; }
 
-echo -e "${LYELLOW}Stashing any local changes before checking out main branch.${LNOCOLOR}"
-git stash 2>/dev/null
-echo -e "${LYELLOW}Merging latest changes from upstream into main${LNOCOLOR}"
+if ! git diff-index --quiet HEAD --; then
+  echo -e "${LYELLOW}Stashing local changes before checking out main branch.${LNOCOLOR}"
+  LOCAL_CHANGES=1
+  git stash 2>/dev/null
+fi
+
 git checkout main || { echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"; exit 1; }
-git merge -X theirs -m "Meging in latest features from upstream" upstream/main || { echo -e "${LRED}Failed to merge changes from upstream.${LNOCOLOR}"; exit 1; }
 
-echo -e "${LYELLOW}Pulling latest changes from origin with rebase${LNOCOLOR}"
-git pull --rebase --autostash origin main || { echo -e "${LRED}Failed to rebase with origin/main. Aborting.${LNOCOLOR}"; exit 1; }
+git merge -X theirs -m "Merging latest changes from origin/main into main" || { echo -e "${LRED}Failed to merge changes from origin/main.${LNOCOLOR}"; exit 1; }
+
+echo -e "${LYELLOW}Merging latest changes from upstream into main${LNOCOLOR}"
+git merge -X theirs -m "Meging in latest features from upstream" upstream/main || { echo -e "${LRED}Failed to merge changes from upstream.${LNOCOLOR}"; exit 1; }
 
 git push origin main || { echo -e "${LRED}Failed to push updates from upstream to origin main.${LNOCOLOR}"; exit 1; }
 
+git checkout "$CURRENT_BRANCH" || { echo -e "${LRED}Failed to switch back to branch: $CURRENT_BRANCH${LNOCOLOR}"; exit 1; }
+
+if [ "$LOCAL_CHANGES" -eq 1 ]; then
+  git stash pop
+fi
+
+cd "$PWD"
 echo -e "${LGREEN}Update complete!${LNOCOLOR}"
