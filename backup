@@ -9,7 +9,6 @@ LNOCOLOR='\033[0m'
 REPO_DIR="$HOME/dotf2git"
 BACKUP_DIR="$REPO_DIR/my-dot-files"
 PUBWL="$REPO_DIR/src/pubwl"
-USER_WHITELIST="$REPO_DIR/src/pubwl"
 CONFIG_FILE="$HOME/.dotf2git"
 UPSTREAM_URL="git@github.com:PeachlifeAB/dotf2git.git"
 PWD=$(pwd)
