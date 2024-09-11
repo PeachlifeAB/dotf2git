@@ -22,6 +22,7 @@
 .eslintrc
 .exports
 .extra
+.fdignore
 .gdbinit
 .gemrc
 .gitattributes
