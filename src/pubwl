@@ -54,6 +54,7 @@
 .pystartup
 .python_history
 .pythonrc.py
+.rgignore
 .rspec
 .rubocop.yml
 .screenrc
