@@ -60,8 +60,12 @@ get_user_remote_url() {
   fi
 
   ORIGIN_REPO_URL="$(git remote get-url origin)"
+  if git remote get-url upstream >/dev/null 2>&1; then
+    git remote set-url upstream "$UPSTREAM_URL" 2>/dev/null
+  else
+    git remote add upstream "$UPSTREAM_URL" 2>/dev/null
+  fi
   UPSTREAM_REPO_URL="$(git remote get-url upstream)"
-
   if [[ "$ORIGIN_REPO_URL" == *"github.com:PeachlifeAB/dotf2git.git" ]] && [[ "$UPSTREAM_REPO_URL" == *"github.com:PeachlifeAB/dotf2git.git" ]]; then
     echo -e "${LRED}Fatal error: Running backup script with $ORIGIN_REPO_URL as origin.${LNOCOLOR}"
     git remote remove upstream 2>/dev/null
