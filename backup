@@ -149,10 +149,18 @@ sync_whitelist() {
     if [ -e "$HOME/$item" ]; then
       echo -e "${LGREEN}Syncing $item to $BACKUP_DIR/$item${LNOCOLOR}"
       mkdir -p "$BACKUP_DIR/$(dirname "$item")"
-      if [ -d "$HOME/$item/.git" ]; then
-        echo -e "Unstaging nested git repository"
-        git rm --cached -r "$item" >/dev/null 2>&1
-        rsync -av --exclude='.git' "$HOME/$item/" "$BACKUP_DIR/$item/"
+      if [ -d "$HOME/$item" ]; then
+        local rsync_args=("-a" "--exclude=.git")
+        while IFS= read -r repo_git; do
+          local repo_root
+          local relative_repo_root
+          repo_root=$(dirname "$repo_git")
+          relative_repo_root=${repo_root#"$HOME/$item"/}
+          if [ "$relative_repo_root" != "$repo_root" ]; then
+            rsync_args+=("--exclude=$relative_repo_root/")
+          fi
+        done < <(find "$HOME/$item" -mindepth 2 \( -type d -name .git -o -type f -name .git \) 2>/dev/null)
+        rsync "${rsync_args[@]}" "$HOME/$item/" "$BACKUP_DIR/$item/"
       else
         cp -a "$HOME/$item" "$BACKUP_DIR/$item"
       fi
@@ -162,8 +170,10 @@ sync_whitelist() {
 sync_whitelist "$PUBWL"
 sync_whitelist "$COMPUTER_NAME.whitelist"
 
-git add "$BACKUP_DIR" >/dev/null 2>&1
-
+if ! git add "$BACKUP_DIR"; then
+  echo -e "${LRED}Failed to stage backup changes.${LNOCOLOR}"
+  exit 1
+fi
 if git status | grep -q "both modified"; then
   echo -e "${LRED}Conflict detected! Please resolve the conflict before committing and pushing changes.${LNOCOLOR}"
   echo -e "${LYELLOW}Use 'git mergetool' or edit the files manually to resolve the conflicts.${LNOCOLOR}"
