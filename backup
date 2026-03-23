@@ -34,14 +34,14 @@ get_user_remote_url() {
   if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
   else
-    read -p -r "Enter your GitHub username: " GITHUB_USER_NAME
+    read -rp "Enter your GitHub username: " GITHUB_USER_NAME
     if [ "$GITHUB_USER_NAME" = "PeachlifeAB" ]; then
       echo -e "${LRED}Fatal error. The username is same as upstream PeachlifeAB.${LNOCOLOR}"
       exit 1
     fi
     echo "GITHUB_USER_NAME=$GITHUB_USER_NAME" >"$CONFIG_FILE"
     USER_REPO_URL="git@github.com:$GITHUB_USER_NAME/dotf2git.git"
-    read -p -r "Press Enter to confirm the repository URL or edit it [$USER_REPO_URL]: " REPO_URL
+    read -rp "Press Enter to confirm the repository URL or edit it [$USER_REPO_URL]: " REPO_URL
     REPO_URL="${REPO_URL:-$USER_REPO_URL}"
     git remote remove origin 2>/dev/null
     git remote remove upstream 2>/dev/null
