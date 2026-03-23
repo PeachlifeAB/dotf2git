@@ -105,6 +105,12 @@ if git show-ref --verify --quiet refs/heads/"$COMPUTER_NAME"; then
     echo -e "${LRED}Failed to switch to branch $COMPUTER_NAME.${LNOCOLOR}"
     exit 1
   }
+elif git show-ref --verify --quiet refs/remotes/origin/"$COMPUTER_NAME"; then
+  echo -e "${LYELLOW}Creating local branch from origin/$COMPUTER_NAME${LNOCOLOR}"
+  git checkout -b "$COMPUTER_NAME" --track "origin/$COMPUTER_NAME" >/dev/null 2>&1 || {
+    echo -e "${LRED}Failed to create local branch from origin/$COMPUTER_NAME.${LNOCOLOR}"
+    exit 1
+  }
 else
   echo -e "${LYELLOW}Creating and switching to new branch $COMPUTER_NAME${LNOCOLOR}"
   git checkout -b "$COMPUTER_NAME" >/dev/null 2>&1 || {
@@ -116,7 +122,10 @@ fi
 if [ ! -f "$COMPUTER_NAME.whitelist" ]; then
   touch "$COMPUTER_NAME.whitelist"
   git add "$COMPUTER_NAME.whitelist" >/dev/null 2>&1 && git commit -m "$COMPUTER_NAME.whitelist added" --quiet
-  git push -u origin "$COMPUTER_NAME" --quiet
+  git push -u origin "$COMPUTER_NAME" --quiet || {
+    echo -e "${LRED}Failed to push local changes to the remote.${LNOCOLOR}"
+    exit 1
+  }
 fi
 
 if ! git diff --quiet "$COMPUTER_NAME.whitelist"; then
