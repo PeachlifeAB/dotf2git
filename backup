@@ -47,6 +47,10 @@ get_user_remote_url() {
     git remote remove upstream 2>/dev/null
     git remote add origin "$REPO_URL" 2>/dev/null
     git remote add upstream $UPSTREAM_URL 2>/dev/null
+    git stash -u -q 2>/dev/null
+    git fetch origin --quiet 2>/dev/null
+    git rebase origin/main --quiet 2>/dev/null || true
+    git stash pop -q 2>/dev/null || true
     git push -u origin main --quiet || {
       echo -e "${LRED}Failed to push changes.${LNOCOLOR}"
       git remote -v
