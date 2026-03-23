@@ -150,6 +150,10 @@ sync_whitelist() {
       echo -e "${LGREEN}Syncing $item to $BACKUP_DIR/$item${LNOCOLOR}"
       mkdir -p "$BACKUP_DIR/$(dirname "$item")"
       if [ -d "$HOME/$item" ]; then
+        if [ -e "$HOME/$item/.git" ]; then
+          echo -e "${LYELLOW}Skipping git repository $item${LNOCOLOR}"
+          continue
+        fi
         local rsync_args=("-a" "--exclude=.git")
         while IFS= read -r repo_git; do
           local repo_root
