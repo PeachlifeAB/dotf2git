@@ -27,10 +27,6 @@ git fetch --all --quiet || {
   echo -e "${LRED}Failed to fetch changes.${LNOCOLOR}"
   exit 1
 }
-git checkout main --quiet || {
-  echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"
-  exit 1
-}
 
 if ! git diff-index --quiet HEAD --ignore-submodules --; then
   echo -e "${LYELLOW}Stashing local changes${LNOCOLOR}"
@@ -44,6 +40,10 @@ if ! git diff-index --quiet HEAD --ignore-submodules --; then
   }
 fi
 
+git checkout main --quiet || {
+  echo -e "${LRED}Failed to switch to main branch.${LNOCOLOR}"
+  exit 1
+}
 echo -e "${LYELLOW}Merging latest changes from origin/main into main${LNOCOLOR}"
 git merge -X theirs --quiet -m "Merging latest changes from origin/main into main" origin/main || {
   echo -e "${LRED}Failed to merge changes from origin/main.${LNOCOLOR}"
